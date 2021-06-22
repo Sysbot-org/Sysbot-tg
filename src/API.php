@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace Sysbot\Telegram;
 
 use GuzzleHttp\Client;
@@ -184,7 +183,7 @@ class API
                 }
             }
         }
-        echo $method . ' -> ' . $useMultipart . PHP_EOL;
+        $promise = null;
         if ($useMultipart) {
             $args = $this->buildMultipartArgs($args);
             $promise = $this->client->postAsync(
