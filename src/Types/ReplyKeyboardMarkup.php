@@ -16,6 +16,9 @@ class ReplyKeyboardMarkup implements TypeInterface
     /** @var bool|null */
     public ?bool $oneTimeKeyboard = null;
 
+    /** @var string|null */
+    public ?string $inputFieldPlaceholder = null;
+
     /** @var bool|null */
     public ?bool $selective = null;
 }

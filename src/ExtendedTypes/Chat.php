@@ -17,7 +17,7 @@ trait Chat
 
     public function kickMember(int $userId, ?int $untilDate = null, ?bool $revokeMessages = null): PromiseInterface
     {
-        return $this->api->kickChatMember(
+        return $this->api->banChatMember(
             chatId: $this->id,
             userId: $userId,
             untilDate: $untilDate,

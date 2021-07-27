@@ -12,7 +12,7 @@ trait ChatMemberUpdated
 
     public function ban(?int $untilDate = null, ?bool $revokeMessages = null): PromiseInterface
     {
-        return $this->api->kickChatMember(
+        return $this->api->banChatMember(
             chatId: $this->chat->id,
             userId: $this->newChatMember->user->id,
             untilDate: $untilDate,

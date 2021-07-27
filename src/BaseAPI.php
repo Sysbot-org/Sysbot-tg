@@ -8,6 +8,7 @@
 namespace Sysbot\Telegram;
 
 use GuzzleHttp\Promise\PromiseInterface;
+use Sysbot\Telegram\Types\BotCommandScope;
 use Sysbot\Telegram\Types\ChatPermissions;
 use Sysbot\Telegram\Types\ForceReply;
 use Sysbot\Telegram\Types\InlineKeyboardMarkup;
@@ -19,9 +20,7 @@ use Sysbot\Telegram\Types\ReplyKeyboardRemove;
 
 trait BaseAPI
 {
-
-
-    abstract public function sendRequest(string $method, array $args): PromiseInterface;
+    abstract public function sendRequest(string $method, array $args): mixed;
 
 
     public function getUpdates(
@@ -406,7 +405,7 @@ trait BaseAPI
     }
 
 
-    public function kickChatMember(
+    public function banChatMember(
         int|string $chatId,
         int $userId,
         ?int $untilDate = null,
@@ -455,11 +454,8 @@ trait BaseAPI
     }
 
 
-    public function setChatAdministratorCustomTitle(
-        int|string $chatId,
-        int $userId,
-        string $customTitle
-    ): PromiseInterface {
+    public function setChatAdministratorCustomTitle(int|string $chatId, int $userId, string $customTitle): PromiseInterface
+    {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
     }
@@ -535,11 +531,8 @@ trait BaseAPI
     }
 
 
-    public function pinChatMessage(
-        int|string $chatId,
-        int $messageId,
-        ?bool $disableNotification = null
-    ): PromiseInterface {
+    public function pinChatMessage(int|string $chatId, int $messageId, ?bool $disableNotification = null): PromiseInterface
+    {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
     }
@@ -580,7 +573,7 @@ trait BaseAPI
     }
 
 
-    public function getChatMembersCount(int|string $chatId): PromiseInterface
+    public function getChatMemberCount(int|string $chatId): PromiseInterface
     {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
@@ -620,14 +613,21 @@ trait BaseAPI
     }
 
 
-    public function setMyCommands(array $commands): PromiseInterface
+    public function setMyCommands(array $commands, ?BotCommandScope $scope = null, ?string $languageCode = null): PromiseInterface
     {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
     }
 
 
-    public function getMyCommands(): PromiseInterface
+    public function deleteMyCommands(?BotCommandScope $scope = null, ?string $languageCode = null): PromiseInterface
+    {
+        $args = get_defined_vars();
+        return $this->sendRequest(__FUNCTION__, $args);
+    }
+
+
+    public function getMyCommands(?BotCommandScope $scope = null, ?string $languageCode = null): PromiseInterface
     {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
@@ -686,11 +686,8 @@ trait BaseAPI
     }
 
 
-    public function stopPoll(
-        int|string $chatId,
-        int $messageId,
-        ?InlineKeyboardMarkup $replyMarkup = null
-    ): PromiseInterface {
+    public function stopPoll(int|string $chatId, int $messageId, ?InlineKeyboardMarkup $replyMarkup = null): PromiseInterface
+    {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
     }
@@ -837,11 +834,8 @@ trait BaseAPI
     }
 
 
-    public function answerPreCheckoutQuery(
-        string $preCheckoutQueryId,
-        bool $ok,
-        ?string $errorMessage = null
-    ): PromiseInterface {
+    public function answerPreCheckoutQuery(string $preCheckoutQueryId, bool $ok, ?string $errorMessage = null): PromiseInterface
+    {
         $args = get_defined_vars();
         return $this->sendRequest(__FUNCTION__, $args);
     }

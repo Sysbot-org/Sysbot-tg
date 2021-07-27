@@ -13,7 +13,7 @@ trait User
 
     public function ban(int|string $chatId, ?int $untilDate = null, ?bool $revokeMessages = null): PromiseInterface
     {
-        return $this->api->kickChatMember(
+        return $this->api->banChatMember(
             chatId: $chatId,
             userId: $this->id,
             untilDate: $untilDate,

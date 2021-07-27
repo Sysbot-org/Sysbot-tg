@@ -7,6 +7,7 @@ namespace Sysbot\Telegram\ExtendedTypes;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Sysbot\Telegram\API;
+use Sysbot\Telegram\Constants\ApiClasses;
 use Sysbot\Telegram\Constants\ReturnMap;
 use Sysbot\Telegram\Types\Animation;
 use Sysbot\Telegram\Types\Audio;
@@ -32,35 +33,6 @@ use Throwable;
 
 trait Response
 {
-
-    protected static array $apiClasses = [
-        Animation::class,
-        Audio::class,
-        ChatPhoto::class,
-        Document::class,
-        PassportFile::class,
-        PhotoSize::class,
-        Sticker::class,
-        Video::class,
-        VideoNote::class,
-        Voice::class,
-        InlineQueryResultCachedAudio::class,
-        InlineQueryResultCachedDocument::class,
-        InlineQueryResultCachedGif::class,
-        InlineQueryResultCachedMpeg4Gif::class,
-        InlineQueryResultCachedPhoto::class,
-        InlineQueryResultCachedSticker::class,
-        InlineQueryResultCachedVideo::class,
-        InlineQueryResultCachedVoice::class,
-        \Sysbot\Telegram\Types\CallbackQuery::class,
-        \Sysbot\Telegram\Types\Chat::class,
-        \Sysbot\Telegram\Types\ChatInviteLink::class,
-        \Sysbot\Telegram\Types\ChatMemberUpdated::class,
-        \Sysbot\Telegram\Types\ChatPermissions::class,
-        \Sysbot\Telegram\Types\Message::class,
-        \Sysbot\Telegram\Types\User::class
-    ];
-
 
     public function __construct(private API $api, private string $methodName)
     {
@@ -131,9 +103,7 @@ trait Response
         }
         foreach ($resultTypes as $resultType) {
             $args = [AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true];
-            foreach (self::$apiClasses as $apiClass) {
-                $args[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$apiClass] = ['api' => $this->api];
-            }
+            $args += ApiClasses::buildArgs($this->api);
             if (is_array($result)) {
                 $resultType .= '[]';
             }

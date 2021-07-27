@@ -3,6 +3,7 @@
 
 namespace Sysbot\Telegram;
 
+use Generator;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -15,6 +16,8 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Sysbot\Telegram\Common\NameNormalizer;
+use Sysbot\Telegram\Constants\ApiClasses;
+use Sysbot\Telegram\Constants\UpdateTypes;
 use Sysbot\Telegram\Exceptions\TelegramAPIException;
 use Sysbot\Telegram\Exceptions\TelegramBadRequestException;
 use Sysbot\Telegram\Exceptions\TelegramForbiddenException;
@@ -25,6 +28,8 @@ use Sysbot\Telegram\Helpers\TypeInstantiator;
 use Sysbot\Telegram\Types\InputFile;
 use Sysbot\Telegram\Types\InputMedia;
 use Sysbot\Telegram\Types\Response;
+use Sysbot\Telegram\Types\Update;
+use Sysbot\Telegram\Types\WebhookInfo;
 
 /**
  * Class API
@@ -52,6 +57,10 @@ class API
      * @var array
      */
     public array $defaultArgs = [];
+    /**
+     * @var array
+     */
+    public array $allowedUpdates = [];
 
 
     /**
@@ -63,7 +72,7 @@ class API
     public function __construct(
         private string $token,
         private string $apiEndpoint = self::BOT_API_URL,
-        float $timeout = 0
+        private float $timeout = 0
     ) {
         $apiUri = $this->apiEndpoint . $this->token . '/';
         $this->client = new Client(['base_uri' => $apiUri, 'timeout' => $timeout]);
@@ -257,6 +266,84 @@ class API
     public function getSerializer(): Serializer
     {
         return $this->serializer;
+    }
+
+    /**
+     * @return Generator
+     */
+    public function iterUpdates(): Generator
+    {
+        $timeout = 0 === $this->timeout ? 30 : $this->timeout;
+        $offset = 0;
+        $args = [
+            AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+            AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true
+        ];
+        $args += ApiClasses::buildArgs($this);
+        $data = file_get_contents('php://input');
+        if (!empty($data) and is_string($data)) {
+            yield $this->serializer->deserialize(
+                $data,
+                Update::class,
+                'json',
+                $args
+            );
+            return;
+        }
+        while (true) {
+            $updates = $this->getUpdates(
+                offset: $offset,
+                timeout: $timeout,
+                allowedUpdates: $this->allowedUpdates
+            )->wait();
+            /** @var Update $update */
+            foreach ($updates as $update) {
+                yield $update;
+            }
+            $offset = $update->updateId + 1;
+        }
+    }
+
+    /**
+     * @return PromiseInterface
+     */
+    public function dropUpdates(): PromiseInterface
+    {
+        /** @var WebhookInfo $webhookInfo */
+        $webhookInfo = $this->getWebhookInfo()->wait();
+        if (!empty($webhookInfo->url)) {
+            return $this->setWebhook(
+                url: $webhookInfo->url,
+                ipAddress: $webhookInfo->ipAddress,
+                maxConnections: $webhookInfo->maxConnections,
+                allowedUpdates: $webhookInfo->allowedUpdates,
+                dropPendingUpdates: true
+            );
+        }
+        return $this->getUpdates(offset: -1);
+    }
+
+    /**
+     * Note: 8191 automatically enables all available types (chat_member included)
+     *
+     * @param int $allowedUpdates
+     * @return $this
+     */
+    public function setAllowedUpdates(int $allowedUpdates = 8191): self
+    {
+        $types = UpdateTypes::getAllowedTypes($allowedUpdates);
+        /** @var WebhookInfo $webhookInfo */
+        $webhookInfo = $this->getWebhookInfo()->wait();
+        if (!empty($webhookInfo->url)) {
+            $this->setWebhook(
+                url: $webhookInfo->url,
+                ipAddress: $webhookInfo->ipAddress,
+                maxConnections: $webhookInfo->maxConnections,
+                allowedUpdates: $types,
+            )->wait();
+        }
+        $this->allowedUpdates = $types;
+        return $this;
     }
 
 }
