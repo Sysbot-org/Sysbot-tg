@@ -2,6 +2,6 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InputMessageContent implements TypeInterface
+abstract class InputMessageContent implements TypeInterface
 {
 }

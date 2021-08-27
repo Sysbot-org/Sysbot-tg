@@ -2,7 +2,7 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InputVenueMessageContent implements TypeInterface
+class InputVenueMessageContent extends InputMessageContent
 {
 	/** @var float */
 	public float $latitude;

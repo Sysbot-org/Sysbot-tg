@@ -5,7 +5,7 @@ namespace Sysbot\Telegram\Types;
 class ChatMemberAdministrator extends ChatMember
 {
 	/** @var string */
-	public string $status;
+	public string $status = 'administrator';
 
 	/** @var User */
 	public User $user;

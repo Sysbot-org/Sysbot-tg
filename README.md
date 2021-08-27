@@ -11,6 +11,12 @@ This library interacts with the Telegram Bot API (or your own servers, your choi
 
 It is a standalone library, so you can use it separately.
 
+
+## Changelog
+
+Interested in recent changes? Have a look [here](CHANGELOG.md)!
+
+
 ## Installation
 
 Install the library with composer:

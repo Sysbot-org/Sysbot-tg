@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultGame implements TypeInterface
+class InlineQueryResultGame extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'game';
 
 	/** @var string */
 	public string $id;

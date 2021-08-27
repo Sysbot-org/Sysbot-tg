@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultContact implements TypeInterface
+class InlineQueryResultContact extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'contact';
 
 	/** @var string */
 	public string $id;

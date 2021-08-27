@@ -2,6 +2,6 @@
 
 namespace Sysbot\Telegram\Types;
 
-class PassportElementError implements TypeInterface
+abstract class PassportElementError implements TypeInterface
 {
 }

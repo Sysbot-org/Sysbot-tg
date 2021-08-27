@@ -4,6 +4,8 @@
 namespace Sysbot\Telegram\ExtendedTypes;
 
 
+use stdClass;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Sysbot\Telegram\API;
@@ -24,6 +26,7 @@ use Sysbot\Telegram\Types\InlineQueryResultCachedVoice;
 use Sysbot\Telegram\Types\PassportFile;
 use Sysbot\Telegram\Types\PhotoSize;
 use Sysbot\Telegram\Types\Response as ResponseType;
+use Sysbot\Telegram\Types\ResponseParameters;
 use Sysbot\Telegram\Types\Sticker;
 use Sysbot\Telegram\Types\TypeInterface;
 use Sysbot\Telegram\Types\Video;
@@ -33,6 +36,9 @@ use Throwable;
 
 trait Response
 {
+
+    public stdClass|TypeInterface|array|int|string|bool|null $result = null;
+    public stdClass|ResponseParameters|null $parameters = null;
 
     public function __construct(private API $api, private string $methodName)
     {
@@ -59,12 +65,10 @@ trait Response
             $parsedResult = $this->parseResult($result);
             if (null !== $parsedResult) {
                 $this->result = $parsedResult;
-                /** @var ResponseType $this */
                 return $this;
             }
         }
         $this->result = $result;
-        /** @var ResponseType $this */
         return $this;
     }
 
@@ -75,7 +79,6 @@ trait Response
     public function setErrorCode(?int $errorCode): ResponseType
     {
         $this->errorCode = $errorCode;
-        /** @var ResponseType $this */
         return $this;
     }
 
@@ -86,7 +89,25 @@ trait Response
     public function setDescription(?string $description): ResponseType
     {
         $this->description = $description;
-        /** @var ResponseType $this */
+        return $this;
+    }
+
+    public function setParameters(?object $parameters): ResponseType
+    {
+        if (!empty($parameters) and !$parameters instanceof ResponseParameters) {
+            try {
+                $parsedParameters = $this->api->getSerializer()->denormalize(
+                    $parameters,
+                    ResponseParameters::class,
+                    null,
+                    [AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true]
+                );
+                $parameters = $parsedParameters;
+            } catch (ExceptionInterface) {
+                // nothing
+            }
+        }
+        $this->parameters = $parameters;
         return $this;
     }
 

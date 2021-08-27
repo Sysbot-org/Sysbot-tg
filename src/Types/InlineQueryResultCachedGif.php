@@ -2,37 +2,32 @@
 
 namespace Sysbot\Telegram\Types;
 
-use Sysbot\Telegram\ExtendedTypes\Downloadable;
-
-class InlineQueryResultCachedGif implements TypeInterface
+class InlineQueryResultCachedGif extends InlineQueryResult
 {
+	/** @var string */
+	public string $type = 'gif';
 
-    use Downloadable;
+	/** @var string */
+	public string $id;
 
-    /** @var string */
-    public string $type;
+	/** @var string */
+	public string $gifFileId;
 
-    /** @var string */
-    public string $id;
+	/** @var string|null */
+	public ?string $title = null;
 
-    /** @var string */
-    public string $gifFileId;
+	/** @var string|null */
+	public ?string $caption = null;
 
-    /** @var string|null */
-    public ?string $title = null;
+	/** @var string|null */
+	public ?string $parseMode = null;
 
-    /** @var string|null */
-    public ?string $caption = null;
+	/** @var Array<MessageEntity>|null */
+	public ?array $captionEntities = null;
 
-    /** @var string|null */
-    public ?string $parseMode = null;
+	/** @var InlineKeyboardMarkup|null */
+	public ?InlineKeyboardMarkup $replyMarkup = null;
 
-    /** @var Array<MessageEntity>|null */
-    public ?array $captionEntities = null;
-
-    /** @var InlineKeyboardMarkup|null */
-    public ?InlineKeyboardMarkup $replyMarkup = null;
-
-    /** @var InputMessageContent|null */
-    public ?InputMessageContent $inputMessageContent = null;
+	/** @var InputMessageContent|null */
+	public ?InputMessageContent $inputMessageContent = null;
 }

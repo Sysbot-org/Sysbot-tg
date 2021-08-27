@@ -2,6 +2,6 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResult implements TypeInterface
+abstract class InlineQueryResult implements TypeInterface
 {
 }

@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultLocation implements TypeInterface
+class InlineQueryResultLocation extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'location';
 
 	/** @var string */
 	public string $id;

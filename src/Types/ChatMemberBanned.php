@@ -5,7 +5,7 @@ namespace Sysbot\Telegram\Types;
 class ChatMemberBanned extends ChatMember
 {
 	/** @var string */
-	public string $status;
+	public string $status = 'kicked';
 
 	/** @var User */
 	public User $user;

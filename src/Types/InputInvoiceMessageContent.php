@@ -2,7 +2,7 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InputInvoiceMessageContent implements TypeInterface
+class InputInvoiceMessageContent extends InputMessageContent
 {
 	/** @var string */
 	public string $title;

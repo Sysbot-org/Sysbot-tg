@@ -5,7 +5,7 @@ namespace Sysbot\Telegram\Types;
 class ChatMemberRestricted extends ChatMember
 {
 	/** @var string */
-	public string $status;
+	public string $status = 'restricted';
 
 	/** @var User */
 	public User $user;

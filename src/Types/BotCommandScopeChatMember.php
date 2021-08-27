@@ -5,7 +5,7 @@ namespace Sysbot\Telegram\Types;
 class BotCommandScopeChatMember extends BotCommandScope
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'chat_member';
 
 	/** @var int|string */
 	public int|string $chatId;

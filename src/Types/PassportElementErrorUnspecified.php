@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class PassportElementErrorUnspecified implements TypeInterface
+class PassportElementErrorUnspecified extends PassportElementError
 {
 	/** @var string */
-	public string $source;
+	public string $source = 'unspecified';
 
 	/** @var string */
 	public string $type;

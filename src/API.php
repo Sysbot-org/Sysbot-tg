@@ -3,6 +3,7 @@
 
 namespace Sysbot\Telegram;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Generator;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -10,6 +11,9 @@ use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Mapping\ClassDiscriminatorFromClassMetadata;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
@@ -20,8 +24,11 @@ use Sysbot\Telegram\Constants\ApiClasses;
 use Sysbot\Telegram\Constants\UpdateTypes;
 use Sysbot\Telegram\Exceptions\TelegramAPIException;
 use Sysbot\Telegram\Exceptions\TelegramBadRequestException;
+use Sysbot\Telegram\Exceptions\TelegramConflictException;
 use Sysbot\Telegram\Exceptions\TelegramForbiddenException;
 use Sysbot\Telegram\Exceptions\TelegramNotFoundException;
+use Sysbot\Telegram\Exceptions\TelegramServerException;
+use Sysbot\Telegram\Exceptions\TelegramTooManyRequestsException;
 use Sysbot\Telegram\Exceptions\TelegramUnauthorizedException;
 use Sysbot\Telegram\Helpers\FileDownloader;
 use Sysbot\Telegram\Helpers\TypeInstantiator;
@@ -76,12 +83,22 @@ class API
     ) {
         $apiUri = $this->apiEndpoint . $this->token . '/';
         $this->client = new Client(['base_uri' => $apiUri, 'timeout' => $timeout]);
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
         $this->serializer = new Serializer(
             [
-                new ObjectNormalizer(null, new CamelCaseToSnakeCaseNameConverter(), null, new ReflectionExtractor()),
+                new ObjectNormalizer(
+                    $classMetadataFactory,
+                    new CamelCaseToSnakeCaseNameConverter(),
+                    null,
+                    new ReflectionExtractor(),
+                    $discriminator
+                ),
                 new ArrayDenormalizer()
             ],
-            [new JsonEncoder()]
+            [
+                new JsonEncoder()
+            ]
         );
     }
 
@@ -228,13 +245,19 @@ class API
                     ->setOk($data->ok)
                     ->setResult($data->result ?? null)
                     ->setErrorCode($data->error_code ?? null)
-                    ->setDescription($data->description ?? null);
+                    ->setDescription($data->description ?? null)
+                    ->setParameters($data->parameters ?? null);
                 if (!$response->ok) {
                     match ($response->errorCode) {
                         400 => throw new TelegramBadRequestException($response->description),
                         401 => throw new TelegramUnauthorizedException('Token invalid or expired'),
                         403 => throw new TelegramForbiddenException($response->description),
                         404 => throw new TelegramNotFoundException($response->description),
+                        409 => throw new TelegramConflictException($response->description),
+                        429 => throw new TelegramTooManyRequestsException($response->description),
+                        500, 502, 504 => throw new TelegramServerException(
+                            'Bot API is encountering some issues, try again later: ' . ($response->description ?? 'Unknown.')
+                        ),
                         default => throw new TelegramAPIException(
                             sprintf(
                                 'Telegram API returned an error (%s): %s',
@@ -273,7 +296,7 @@ class API
      */
     public function iterUpdates(): Generator
     {
-        $timeout = 0 === $this->timeout ? 30 : $this->timeout;
+        $timeout = 0 == $this->timeout ? 30 : (int)$this->timeout;
         $offset = 0;
         $args = [
             AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
@@ -292,15 +315,15 @@ class API
         }
         while (true) {
             $updates = $this->getUpdates(
-                offset: $offset,
-                timeout: $timeout,
+                offset:         $offset,
+                timeout:        $timeout,
                 allowedUpdates: $this->allowedUpdates
             )->wait();
             /** @var Update $update */
             foreach ($updates as $update) {
                 yield $update;
             }
-            $offset = $update->updateId + 1;
+            $offset = empty($update->updateId) ? $offset : $update->updateId + 1;
         }
     }
 
@@ -313,10 +336,10 @@ class API
         $webhookInfo = $this->getWebhookInfo()->wait();
         if (!empty($webhookInfo->url)) {
             return $this->setWebhook(
-                url: $webhookInfo->url,
-                ipAddress: $webhookInfo->ipAddress,
-                maxConnections: $webhookInfo->maxConnections,
-                allowedUpdates: $webhookInfo->allowedUpdates,
+                url:                $webhookInfo->url,
+                ipAddress:          $webhookInfo->ipAddress,
+                maxConnections:     $webhookInfo->maxConnections,
+                allowedUpdates:     $webhookInfo->allowedUpdates,
                 dropPendingUpdates: true
             );
         }
@@ -336,8 +359,8 @@ class API
         $webhookInfo = $this->getWebhookInfo()->wait();
         if (!empty($webhookInfo->url)) {
             $this->setWebhook(
-                url: $webhookInfo->url,
-                ipAddress: $webhookInfo->ipAddress,
+                url:            $webhookInfo->url,
+                ipAddress:      $webhookInfo->ipAddress,
                 maxConnections: $webhookInfo->maxConnections,
                 allowedUpdates: $types,
             )->wait();

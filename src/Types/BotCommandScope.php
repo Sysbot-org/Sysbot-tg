@@ -2,6 +2,6 @@
 
 namespace Sysbot\Telegram\Types;
 
-class BotCommandScope implements TypeInterface
+abstract class BotCommandScope implements TypeInterface
 {
 }

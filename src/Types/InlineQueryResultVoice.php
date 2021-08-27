@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultVoice implements TypeInterface
+class InlineQueryResultVoice extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'voice';
 
 	/** @var string */
 	public string $id;

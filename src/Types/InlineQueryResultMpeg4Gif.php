@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultMpeg4Gif implements TypeInterface
+class InlineQueryResultMpeg4Gif extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'mpeg4_gif';
 
 	/** @var string */
 	public string $id;

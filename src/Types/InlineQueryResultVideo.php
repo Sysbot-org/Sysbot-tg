@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultVideo implements TypeInterface
+class InlineQueryResultVideo extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'video';
 
 	/** @var string */
 	public string $id;

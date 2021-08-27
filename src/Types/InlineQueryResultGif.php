@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultGif implements TypeInterface
+class InlineQueryResultGif extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'gif';
 
 	/** @var string */
 	public string $id;

@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class InlineQueryResultPhoto implements TypeInterface
+class InlineQueryResultPhoto extends InlineQueryResult
 {
 	/** @var string */
-	public string $type;
+	public string $type = 'photo';
 
 	/** @var string */
 	public string $id;

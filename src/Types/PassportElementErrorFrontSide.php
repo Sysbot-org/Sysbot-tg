@@ -2,10 +2,10 @@
 
 namespace Sysbot\Telegram\Types;
 
-class PassportElementErrorFrontSide implements TypeInterface
+class PassportElementErrorFrontSide extends PassportElementError
 {
 	/** @var string */
-	public string $source;
+	public string $source = 'front_side';
 
 	/** @var string */
 	public string $type;
